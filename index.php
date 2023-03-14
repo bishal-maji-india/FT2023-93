@@ -2,10 +2,10 @@
 
 //first to check if the user is already loged in or not- if not, send to login.php page
 if (!isset($_SESSION["login"])) {
-    header("location: login.php");
-}else{
-//if loged in, check if user inserted his data, if yes, go to welcome.php page.
-  if($_SESSION["data"]=="1"){
+  header("location: login.php");
+} else {
+  //if loged in, check if user inserted his data, if yes, go to welcome.php page.
+  if ($_SESSION["data"] == "1") {
     header("location: welcome.php");
   }
 }
@@ -13,7 +13,7 @@ if (!isset($_SESSION["login"])) {
 
 <!DOCTYPE html>
 <html lang="en">
-   <!-- link to global stylesheet -->
+<!-- link to global stylesheet -->
 <link href="styles.css" rel="stylesheet" />
 
 <head>
@@ -89,50 +89,56 @@ if (array_key_exists('submit', $_POST)) {
 }
 
 //method to insert the data in server.
-function uploadDataInSql(){
-$servername = "localhost";
-$username = "root";
-$password_sql = "Bishal.123";
-$dbname = "user_db";
-
- try {
- $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password_sql);
+function uploadDataInSql()
+{ 
+  // Looing for .env at the root directory
+  $env = parse_ini_file('.env');
+  
+  // Retrive env variable
+  $servername = $_ENV['SERVENAME'];
+  $username = $_ENV['USERNAME'];
+  $password_sql = $_ENV['PASSWORD_SQL'];
+  $dbname = $_ENV['DB_NAME'];
+  
+  try {
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password_sql);
     // setting the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  
+
     /* Step 1: prepare */
-  $param_f_name = $_POST['first_name'];
-  $param_l_name = $_POST['last_name'];
-  $param_phone= $_POST['phone'];
-  $param_marks= $_POST['marks'];
-  $param_user_img=$_SESSION["user_image"];
-  $param_uid= $_SESSION["uid"];
-  $sql="UPDATE user_data SET first_name=?, last_name=?, phone=?, marks=?, user_image=? WHERE uid=?";
-  
-  // Prepare statement and bind data
-  $statement = $conn->prepare($sql);
-  $statement->bindParam(1, $param_f_name, PDO::PARAM_STR);
-  $statement->bindParam(2, $param_l_name, PDO::PARAM_STR);
-  $statement->bindParam(3, $param_phone, PDO::PARAM_STR);
-  $statement->bindParam(4, $param_marks, PDO::PARAM_STR);
-  $statement->bindParam(5, $param_user_img, PDO::PARAM_STR);
-  $statement->bindParam(6, $param_uid, PDO::PARAM_STR);
+    $user=new User();
+    $user->set_first_name($_POST['first_name']);
+    $user->set_last_name($_POST['last_name']);
+    $user->set_email($_POST['first_name']);
+    $user->set_phone($_POST['phone']);
+    $user->set_marks($_POST['marks']);
+    $user->set_user_image($_SESSION["user_image"]);
+    $param_uid = $_SESSION["uid"];
+    
+    $sql = "UPDATE user_data SET first_name=?, last_name=?, phone=?, marks=?, user_image=? WHERE uid=?";
+
+    // Prepare statement and bind data
+    $statement = $conn->prepare($sql);
+    $statement->bindParam(1, $user->get_first_name(), PDO::PARAM_STR);
+    $statement->bindParam(2, $user->get_last_name(), PDO::PARAM_STR);
+    $statement->bindParam(3, $user->get_phone(), PDO::PARAM_STR);
+    $statement->bindParam(4, $user->get_marks(), PDO::PARAM_STR);
+    $statement->bindParam(5, $user->get_user_image(), PDO::PARAM_STR);
+    $statement->bindParam(6, $param_uid, PDO::PARAM_STR);
 
 
 
-  //If UPDATE succeeded or not.
-  if($statement->execute())
-    echo "Connected successfully";
+    //If UPDATE succeeded or not.
+    if ($statement->execute())
+      echo "Connected successfully";
     $_SESSION["login"] = "1";
-    $_SESSION["data"]="1";
-    $_SESSION["uid"]=$param_uid;
+    $_SESSION["data"] = "1";
+    $_SESSION["uid"] = $param_uid;
     header("location: welcome.php");
     exit;
-  
   } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
   }
- 
 }
 
 //to logout the user this method is runned
@@ -144,24 +150,23 @@ if (array_key_exists('button_logout', $_POST)) {
 
 <body>
   <div class="container">
-  <div class="mid-box-center">
-  <h1>Homepage</h1>
-  <h4>Fill all the feilds</h4>
-  <p id="error"></p>
-    <form name="task_six_form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post" enctype="multipart/form-data">
-      <h4>First Name : <input type="text" class="f_name" name="first_name"><span class="error">* <?php echo $first_name_err; ?></span></h4>
-      <h4>Last Name : <input type="text" class="l_name" name="last_name"><span class="error">* <?php echo $last_name_err; ?></span></h4>
-      <h4>Full Name : <input type="text" class="fu_name" disabled name="full_name"></h4>
-      <input type="file" name="user_image" id="user_image" />*<span class="error"> <?php echo $img_upload_err; ?></span>
-      <h4>Subject Marks : <textarea type="text" class="sub-marks" name="marks"></textarea><span class="error">* <?php echo $mark_err; ?></span></h4><br>
-      <h4>Phone Number : <input type="number" name="phone"> <br><span class="error">* <?php echo $phone_err; ?></span></h4>
-      <h4>User Email : <input type="text" disabled name="email" value="<?php echo $_SESSION['email'];?>"><br><span class="error">* <?php echo $mail_err; ?></span></h4>
-      <input type="submit" name="submit" class="button" value="Update user"/>
-      <input type='submit' name='button_logout'
-        class='button' value='Logout' />
-    </form>
+    <div class="mid-box-center">
+      <h1>Homepage</h1>
+      <h4>Fill all the feilds</h4>
+      <p id="error"></p>
+      <form name="task_six_form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post" enctype="multipart/form-data">
+        <h4>First Name : <input type="text" class="f_name" name="first_name"><span class="error">* <?php echo $first_name_err; ?></span></h4>
+        <h4>Last Name : <input type="text" class="l_name" name="last_name"><span class="error">* <?php echo $last_name_err; ?></span></h4>
+        <h4>Full Name : <input type="text" class="fu_name" disabled name="full_name"></h4>
+        <input type="file" name="user_image" id="user_image" />*<span class="error"> <?php echo $img_upload_err; ?></span>
+        <h4>Subject Marks : <textarea type="text" class="sub-marks" name="marks"></textarea><span class="error">* <?php echo $mark_err; ?></span></h4><br>
+        <h4>Phone Number : <input type="number" name="phone"> <br><span class="error">* <?php echo $phone_err; ?></span></h4>
+        <h4>User Email : <input type="text" disabled name="email" value="<?php echo $_SESSION['email']; ?>"><br><span class="error">* <?php echo $mail_err; ?></span></h4>
+        <input type="submit" name="submit" class="button" value="Update user" />
+        <input type='submit' name='button_logout' class='button' value='Logout' />
+      </form>
     </div>
-    </div>
+  </div>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>

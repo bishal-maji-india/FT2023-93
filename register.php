@@ -159,8 +159,9 @@ function InsertDataInSql($param_uid, $param_email)
   if ($query->execute()) {
     session_start();
     $_SESSION["login"] = "1";
+    $_SESSION["data"]="0";
     $_SESSION["uid"] = $param_uid;
-    $_SESSION['email'] = $param_email;
+    $_SESSION["email"] = $param_email;
     header("location: index.php");
   } else {
     echo "Error: " . $sql . "<br>" . $conn->errorInfo();
