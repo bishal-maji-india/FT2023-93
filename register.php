@@ -32,6 +32,9 @@
 </body>
 <!-- register the user and save in sql -->
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 $servername = "localhost";
 $username = "root";
 $password_sql = "Bishal.123";
@@ -39,7 +42,7 @@ $dbname = "user_db";
 $name_err = $email_err = $password_err = "";
 
 // user form validation
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if (array_key_exists('submit_form', $_POST)) {
   if (empty($_POST["name"])) {
     $name_err = "First Name is required";
   }
@@ -53,28 +56,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email_err = "Invalid email format";
   }
 
-    //api call for email validation
-    $mail_id=$_POST["email"];
-    $curlObj = curl_init();
-    curl_setopt_array($curlObj, array(
-      CURLOPT_URL => "https://api.apilayer.com/email_verification/check?email=" . $mail_id,
-      CURLOPT_HTTPHEADER => array(
-        "Content-Type: text/plain",
-        "apikey: kG3IBcX6qqFzwvOXaJnVRPq3luu9TL4O"
-      ),
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => "",
-      CURLOPT_FOLLOWLOCATION => true,
-    ));
+  //api call for email validation
+  $mail_id = $_POST["email"];
+  $curlObj = curl_init();
+  curl_setopt_array($curlObj, array(
+    CURLOPT_URL => "https://api.apilayer.com/email_verification/check?email=" . $mail_id,
+    CURLOPT_HTTPHEADER => array(
+      "Content-Type: text/plain",
+      "apikey: kG3IBcX6qqFzwvOXaJnVRPq3luu9TL4O"
+    ),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_ENCODING => "",
+    CURLOPT_FOLLOWLOCATION => true,
+  ));
 
-    $response = curl_exec($curlObj);
-    curl_close($curlObj);
-    $decoded_result = json_decode($response, true);
+  $response = curl_exec($curlObj);
+  curl_close($curlObj);
+  $decoded_result = json_decode($response, true);
 
-    // check the email format is valid or not
-    if (!$decoded_result["format_valid"]) {
-      $email_err = "email format is not valid";
-    }
+  // check the email format is valid or not
+  if ($decoded_result["format_valid"]) {
+    $email_err = "email format is not valid";
+  }
 
   if ($name_err == "" && $email_err == "" && $password_err == "") {
 
@@ -87,19 +90,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       echo "Connection failed: " . $e->getMessage();
     }
 
-    $count_query = "SELECT count(*) from users";
+    //count the number of rows in a table +1
+    $count_query = "SELECT COUNT(*) FROM users";
     $count_res = $conn->query($count_query);
-    $count_result = 1;
-
-    while ($count_res->fetch()) {
-      $count_result = $count_result + 1;
-    }
+    $count_result = $count_res->fetchColumn() + 1;
 
     /* Step 1: prepare */
     $sql = "INSERT INTO users(user_name, user_email, user_password) VALUES (?, ?, ?)";
     $query = $conn->prepare($sql);
-
-    
     $param_name = $_POST['name'];
     $param_email = $_POST['email'];
     $param_password = $_POST['password'];
@@ -159,7 +157,7 @@ function InsertDataInSql($param_uid, $param_email)
   if ($query->execute()) {
     session_start();
     $_SESSION["login"] = "1";
-    $_SESSION["data"]="0";
+    $_SESSION["data"] = "0";
     $_SESSION["uid"] = $param_uid;
     $_SESSION["email"] = $param_email;
     header("location: index.php");

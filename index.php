@@ -1,5 +1,7 @@
 <?php session_start();
 
+require('User.php');
+
 //first to check if the user is already loged in or not- if not, send to login.php page
 if (!isset($_SESSION["login"])) {
   header("location: login.php");
@@ -90,46 +92,46 @@ if (array_key_exists('submit', $_POST)) {
 
 //method to insert the data in server.
 function uploadDataInSql()
-{ 
+{
   // Looing for .env at the root directory
-  $env = parse_ini_file('.env');
-  
+  $_ENV = parse_ini_file('.env');
+
   // Retrive env variable
   $servername = $_ENV['SERVENAME'];
   $username = $_ENV['USERNAME'];
   $password_sql = $_ENV['PASSWORD_SQL'];
   $dbname = $_ENV['DB_NAME'];
-  
+
   try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password_sql);
     // setting the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    /* Step 1: prepare */
-    $user=new User();
+    $user = new User();
     $user->set_first_name($_POST['first_name']);
     $user->set_last_name($_POST['last_name']);
     $user->set_email($_POST['first_name']);
     $user->set_phone($_POST['phone']);
     $user->set_marks($_POST['marks']);
     $user->set_user_image($_SESSION["user_image"]);
+
+
+
+
+    /* Step 1: prepare */
+    $param_f_name = $user->get_first_name();
+    $param_l_name = $user->get_last_name();
+    $param_phone = $user->get_phone();
+    $param_marks = $user->get_marks();
+    $param_user_img = $user->get_user_image();
     $param_uid = $_SESSION["uid"];
-    
     $sql = "UPDATE user_data SET first_name=?, last_name=?, phone=?, marks=?, user_image=? WHERE uid=?";
 
     // Prepare statement and bind data
     $statement = $conn->prepare($sql);
-    $statement->bindParam(1, $user->get_first_name(), PDO::PARAM_STR);
-    $statement->bindParam(2, $user->get_last_name(), PDO::PARAM_STR);
-    $statement->bindParam(3, $user->get_phone(), PDO::PARAM_STR);
-    $statement->bindParam(4, $user->get_marks(), PDO::PARAM_STR);
-    $statement->bindParam(5, $user->get_user_image(), PDO::PARAM_STR);
-    $statement->bindParam(6, $param_uid, PDO::PARAM_STR);
 
-
-
-    //If UPDATE succeeded or not.
-    if ($statement->execute())
+    // If UPDATE succeeded or not.
+    if ($statement->execute([$param_f_name, $param_l_name, $param_phone, $param_marks, $param_user_img, $param_uid]))
       echo "Connected successfully";
     $_SESSION["login"] = "1";
     $_SESSION["data"] = "1";
