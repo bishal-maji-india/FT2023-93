@@ -1,0 +1,7 @@
+{
+    "require": {
+        "phpmailer/phpmailer": "^6.7",
+        "fpdf/fpdf": "^1.85",
+        "setasign/fpdf": "^1.8"
+    }
+}
