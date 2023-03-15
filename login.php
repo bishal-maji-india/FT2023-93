@@ -84,12 +84,9 @@ if (array_key_exists('submit_form', $_POST)) {
   if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
     $email_err = "Invalid email format";
   }
-
   if ($email_err == "" && $password_err == "") {
-
     try {
       $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password_sql);
-
       // setting the PDO error mode to exception
       $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {

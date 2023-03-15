@@ -53,18 +53,14 @@ if (array_key_exists('submit', $_POST)) {
     $phone_err = "Number Must be of 10 digits";
   }
 
-
   if ($first_name_err == "" && $last_name_err == "" && $mark_err == "" && $phone_err == "" && $mail_err == "") {
-
     $upload_directory = "images/";
     $destination_path = $upload_directory . basename($_FILES['user_image']['name']);
     $ready_to_upload = 1;
     $image_type = strtolower(pathinfo($destination_path, PATHINFO_EXTENSION));
 
-
     //check if file already exist
     if (file_exists($destination_path)) {
-      // $upload_err= "file already exixt";
       // deleting the file
       unlink($destination_path);
     }
@@ -75,7 +71,6 @@ if (array_key_exists('submit', $_POST)) {
       && $image_type != "gif"
     ) {
       $img_upload_err = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-
       $ready_to_upload = 0;
     }
 
@@ -114,10 +109,7 @@ function uploadDataInSql()
     $user->set_phone($_POST['phone']);
     $user->set_marks($_POST['marks']);
     $user->set_user_image($_SESSION["user_image"]);
-
-
-
-
+    
     /* Step 1: prepare */
     $param_f_name = $user->get_first_name();
     $param_l_name = $user->get_last_name();
